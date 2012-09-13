@@ -41,10 +41,7 @@ public class MedikarteHelpers {
 
 		// FIXME: sollte mit executed with deleted gehen
 		if (geloescht) {
-			boolean sd = PersistentObject.isShowDeleted();
-			PersistentObject.setShowDeleted(true);
 			qbe.clear();
-			PersistentObject.setShowDeleted(sd);
 		}
 
 		qbe.add(Prescription.PATIENT_ID, Query.EQUALS, patient.getId());
