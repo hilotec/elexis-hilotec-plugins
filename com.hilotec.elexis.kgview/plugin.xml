@@ -70,6 +70,13 @@
             name="Problemliste"
             restorable="true">
       </view>
+      <view
+            category="com.hilotec.elexis.kgview.category"
+            class="com.hilotec.elexis.kgview.Konsliste"
+            id="com.hilotec.elexis.kgview.Konsliste"
+            name="Konsliste"
+            restorable="true">
+      </view>
       <category
             id="com.hilotec.elexis.kgview.category.patientenfelder"
             name="Hilotec KG - Patientenfelder">

@@ -369,7 +369,7 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 
 	public void setFocus() {}
 	
-	private class NeueKonsAct extends Action {
+	public static class NeueKonsAct extends Action {
 		private boolean tel;
 		public NeueKonsAct(boolean tel) {
 			super(Messages.getString("GlobalActions.NewKons"));
@@ -400,7 +400,29 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 					"ein offener Fall ausgewählt werden");
 				return;
 			}
-			new NeueKonsDialog(getSite().getShell(), fall, tel).open(); 
+			new NeueKonsDialog(Hub.getActiveShell(), fall, tel).open(); 
+		}
+	}
+
+	public static class KonsAendernAct extends Action {
+		KonsAendernAct() {
+			super("Konsultations Datum/Zeit ändern");
+			setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_EDIT));
+			setToolTipText("Konsultations Datum/Zeit ändern");
+		}
+
+		@Override
+		public void run(){
+			Konsultation kons = (Konsultation)
+				ElexisEventDispatcher.getSelected(Konsultation.class);
+			if (kons == null || !kons.isEditable(false)) {
+				MessageDialog.openError(null, "Keine/Ungültige " +
+						"Konsultation ausgewählt",
+						"Es muss eine veränderbare Konsultation " +
+						"ausgewählt sein.");
+					return;
+			}
+			new NeueKonsDialog(Hub.getActiveShell(), kons).open();
 		}
 	}
 	
@@ -408,26 +430,8 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 		actNeueKons = new NeueKonsAct(false);
 		actNeueTelKons = new NeueKonsAct(true);
 
-		actKonsAendern = new Action("Konsultations Datum/Zeit ändern") {
-			{
-				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_EDIT));
-				setToolTipText("Konsultations Datum/Zeit ändern");
-			}
-			
-			@Override
-			public void run(){
-				Konsultation kons = (Konsultation)
-					ElexisEventDispatcher.getSelected(Konsultation.class);
-				if (kons == null || !kons.isEditable(false)) {
-					MessageDialog.openError(null, "Keine/Ungültige " +
-							"Konsultation ausgewählt",
-							"Es muss eine veränderbare Konsultation " +
-							"ausgewählt sein.");
-						return;
-				}
-				new NeueKonsDialog(getSite().getShell(), kons).open();
-			}
-		};
+		actKonsAendern = new KonsAendernAct();
+
 		final ArchivKG akg = this;
 		actAutoAkt = new Action("Automatisch aktualisieren", Action.AS_CHECK_BOX) {
 			{
