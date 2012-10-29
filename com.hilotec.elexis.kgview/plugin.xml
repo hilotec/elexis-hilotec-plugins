@@ -124,7 +124,7 @@
             category="com.hilotec.elexis.kgview.category.konsfelder"
             class="com.hilotec.elexis.kgview.konsultationsfeld.LokalStView"
             id="com.hilotec.elexis.kgview.LokalStView"
-            name="Lokalstatus"
+            name="Status"
             restorable="true">
       </view>
       <view
