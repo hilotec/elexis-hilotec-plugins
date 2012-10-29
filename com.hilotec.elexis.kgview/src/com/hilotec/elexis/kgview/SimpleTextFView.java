@@ -18,6 +18,7 @@ abstract public class SimpleTextFView extends ViewPart {
 	private Text textfield;
 	private String origPName;
 	protected Composite area;
+	private boolean modifiable = false;
 
 	@Override
 	public void createPartControl(Composite parent) {
@@ -29,7 +30,8 @@ abstract public class SimpleTextFView extends ViewPart {
 		textfield = new Text(area,
 			(SWT.MULTI | SWT.WRAP | SWT.V_SCROLL));
 
-		textfield.setEnabled(false);
+		modifiable = false;
+		textfield.setEditable(modifiable);
 		textfield.addFocusListener(new FocusListener() {
 			public void focusLost(FocusEvent e) {
 				fieldChanged();
@@ -64,14 +66,15 @@ abstract public class SimpleTextFView extends ViewPart {
 	public void setFocus() {}
 	
 	protected void setEnabled(boolean en) {
-		textfield.setEnabled(en && canEdit);
+		modifiable = en && canEdit;
+		textfield.setEditable(modifiable);
 		if (!en) {
 			setText("");
 		}
 	}
 	
 	protected boolean isEnabled() {
-		return textfield.isEnabled();
+		return modifiable;
 	}
 	
 	protected void setText(String text) {
