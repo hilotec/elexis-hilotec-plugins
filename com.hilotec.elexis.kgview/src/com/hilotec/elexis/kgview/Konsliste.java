@@ -12,6 +12,7 @@ import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
@@ -67,7 +68,8 @@ public class Konsliste extends ViewPart implements ElexisEventListener {
 
 	@Override
 	public void createPartControl(Composite parent) {
-		tv = new TableViewer(parent);
+		tv = new TableViewer(parent, SWT.SINGLE | SWT.FULL_SELECTION |
+				SWT.V_SCROLL | SWT.BORDER);
 
 		Table t = tv.getTable();
 		t.setHeaderVisible(true);
@@ -108,7 +110,7 @@ public class Konsliste extends ViewPart implements ElexisEventListener {
 			private Color mandantColor(Mandant m) {
 				return Desk.getColorFromRGB(Hub.globalCfg.get(
 					PreferenceConstants.USR_MANDATOR_COLORS_PREFIX +
-					m.getLabel(), Desk.COL_WHITE));
+					m.getLabel(), "ffffff"));
 			}
 
 			@Override
