@@ -1,6 +1,7 @@
 package com.hilotec.elexis.kgview;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnPixelData;
 import org.eclipse.jface.viewers.ColumnWeightData;
@@ -117,11 +118,18 @@ public class Konsliste extends ViewPart implements ElexisEventListener {
 				String s = "";
 				switch (cell.getColumnIndex()) {
 					case 0:
-						if (kd.getIstTelefon()) {
-							cell.setImage(AbstractUIPlugin.
+						int typ = kd.getKonsTyp();
+						ImageDescriptor desc = null;
+						if (typ == KonsData.KONSTYP_TELEFON)
+							desc = AbstractUIPlugin.
 								imageDescriptorFromPlugin(Activator.PLUGIN_ID,
-								"rsc/phone.png").createImage());
-						}
+								"rsc/phone.png");
+						else if (typ == KonsData.KONSTYP_HAUSBESUCH)
+							desc = Desk.getImageDescriptor(Desk.IMG_HOME);
+
+						if (desc != null)
+							cell.setImage(desc.createImage());
+						break;
 					case 1:
 						s = k.getDatum();
 						break;
@@ -150,8 +158,9 @@ public class Konsliste extends ViewPart implements ElexisEventListener {
 
 		// Menuleiste
 		ViewMenus menus = new ViewMenus(getViewSite());
-		menus.createToolbar(new ArchivKG.NeueKonsAct(false),
-			new ArchivKG.NeueKonsAct(true),
+		menus.createToolbar(new ArchivKG.NeueKonsAct(KonsData.KONSTYP_NORMAL),
+			new ArchivKG.NeueKonsAct(KonsData.KONSTYP_TELEFON),
+			new ArchivKG.NeueKonsAct(KonsData.KONSTYP_HAUSBESUCH), null,
 			new ArchivKG.KonsAendernAct(),
 			new KonsLoeschenAct());
 

@@ -5,7 +5,7 @@ import java.util.Date;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -26,23 +26,28 @@ public class NeueKonsDialog extends TitleAreaDialog {
 
 	DatePickerCombo datum;
 	Text zeit;
-	Button telefon;
+	Combo typ;
 	
 	Konsultation kons;
 	KonsData data;
 	Fall fall;
-	boolean neuTel;
+	int neuTyp;
+
+	String[] typenS = { "Regulär", "Telefon", "Hausbesuch", };
+	int[] typenI = { KonsData.KONSTYP_NORMAL, KonsData.KONSTYP_TELEFON,
+			KonsData.KONSTYP_HAUSBESUCH, };
 	
 	/**
 	 * Dialog zum anlegen neuer Kons erstellen.
 	 * 
 	 * @param fall Fall zu dem die Konsultation gehoert
-	 * @param tel  Gibt an ob es sich um eine Telefonkons handeln soll
+	 * @param typ  Gibt welcher Konsultationstyp als standard benutzt
+	 *             werden soll.
 	 */
-	public NeueKonsDialog(Shell parentShell, Fall fall, boolean tel) {
+	public NeueKonsDialog(Shell parentShell, Fall fall, int typ) {
 		super(parentShell);
 		this.fall = fall;
-		neuTel = tel;
+		neuTyp = typ;
 	}
 	
 	public NeueKonsDialog(Shell parentShell, Konsultation kons) {
@@ -68,23 +73,34 @@ public class NeueKonsDialog extends TitleAreaDialog {
 		
 		new Label(comp, SWT.NONE).setText("Zeit");
 		zeit = SWTHelper.createText(comp, 1, SWT.BORDER);
-		
-		new Label(comp, SWT.NONE) .setText("Telefon");
-		telefon = new Button(comp, SWT.CHECK);
-		
+
+		new Label(comp, SWT.NONE) .setText("Typ");
+		typ = new Combo(comp, SWT.DROP_DOWN);
+		for (String s: typenS) {
+			typ.add(s);
+		}
+
+
 		// Datum- und Zeitfelder initialisieren
 		if (kons == null) {
 			setTitle("Neue Konsultation erstellen");
 			datum.setDate(new Date());
 			zeit.setText(new TimeTool().toString(TimeTool.TIME_SMALL));
-			telefon.setSelection(neuTel);
 		} else {
 			setTitle("Konsultation modifizieren");
 			TimeTool tt = new TimeTool(kons.getDatum());
 			datum.setDate(tt.getTime());
 			zeit.setText(data.getKonsBeginn());
-			telefon.setSelection(data.getIstTelefon());
+			neuTyp = data.getKonsTyp();
 		}
+
+		for (int i = 0; i < typenI.length; i++) {
+			if (neuTyp == typenI[i]) {
+				typ.select(i);
+				break;
+			}
+		}
+
 		return comp;
 	}
 	
@@ -129,7 +145,7 @@ public class NeueKonsDialog extends TitleAreaDialog {
 		data.setKonsBeginn(tt.getTimeInMillis());
 		kons.setDatum(new TimeTool(d.getTime()).toString(TimeTool.DATE_GER),
 				false);
-		data.setIstTelefon(telefon.getSelection());
+		data.setKonsTyp(typenI[typ.getSelectionIndex()]);
 		close();
 	}
 }

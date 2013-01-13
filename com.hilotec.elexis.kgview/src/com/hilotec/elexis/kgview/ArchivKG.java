@@ -174,6 +174,7 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 	ScrolledFormText text;
 	private Action actNeueKons;
 	private Action actNeueTelKons;
+	private Action actNeuerHausbesuch;
 	private Action actKonsAendern;
 	private Action actAutoAkt;
 	private Action actSortierungUmk;
@@ -207,8 +208,8 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 		
 		createActions();
 		ViewMenus menus = new ViewMenus(getViewSite());
-		menus.createToolbar(actNeueKons, actNeueTelKons, actKonsAendern,
-				actAutoAkt, actSortierungUmk);
+		menus.createToolbar(actNeueKons, actNeueTelKons, actNeuerHausbesuch,
+				null, actKonsAendern, actAutoAkt, actSortierungUmk);
 		
 		// Aktuell ausgewaehlten Patienten laden
 		Patient pat = (Patient) ElexisEventDispatcher.getSelected(Patient.class);
@@ -287,8 +288,12 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 		KonsData kd = KonsData.load(k);
 		
 		sb.append("<p>");
-		if (kd.getIstTelefon()) {
+
+		int typ = kd.getKonsTyp();
+		if (typ == KonsData.KONSTYP_TELEFON) {
 			sb.append("<b>Telefon</b> ");
+		} else if (typ == KonsData.KONSTYP_HAUSBESUCH) {
+			sb.append("<b>Hausbesuch</b> ");
 		} else {
 			sb.append("<b>Konsultation</b> ");
 		}
@@ -370,21 +375,25 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 	public void setFocus() {}
 	
 	public static class NeueKonsAct extends Action {
-		private boolean tel;
-		public NeueKonsAct(boolean tel) {
+		private int typ;
+		public NeueKonsAct(int typ) {
 			super(Messages.getString("GlobalActions.NewKons"));
 			setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_NEW));
 			
-			if (tel) {
+			if (typ == KonsData.KONSTYP_TELEFON) {
 				setText("Neue Telefonkonsultation");
 				setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(
 						Activator.PLUGIN_ID, "rsc/phone.png")); 
 				setToolTipText("Neue Telefonkonsultation anlegen");
+			} else if (typ == KonsData.KONSTYP_HAUSBESUCH) {
+				setText("Neuer Hausbesuch");
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_HOME));
+				setToolTipText("Neuen Hausbesuch anlegen");
 			} else {
 				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_NEW));
 				setToolTipText(Messages.getString("GlobalActions.NewKonsToolTip")); //$NON-NLS-1$
 			}
-			this.tel = tel;
+			this.typ = typ;
 		}
 		
 		@Override
@@ -400,7 +409,7 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 					"ein offener Fall ausgewählt werden");
 				return;
 			}
-			new NeueKonsDialog(Hub.getActiveShell(), fall, tel).open(); 
+			new NeueKonsDialog(Hub.getActiveShell(), fall, typ).open();
 		}
 	}
 
@@ -427,8 +436,9 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 	}
 	
 	private void createActions() {
-		actNeueKons = new NeueKonsAct(false);
-		actNeueTelKons = new NeueKonsAct(true);
+		actNeueKons = new NeueKonsAct(KonsData.KONSTYP_NORMAL);
+		actNeueTelKons = new NeueKonsAct(KonsData.KONSTYP_TELEFON);
+		actNeuerHausbesuch = new NeueKonsAct(KonsData.KONSTYP_HAUSBESUCH);
 
 		actKonsAendern = new KonsAendernAct();
 

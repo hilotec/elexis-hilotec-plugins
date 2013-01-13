@@ -11,7 +11,7 @@ import ch.rgw.tools.StringTool;
 import ch.rgw.tools.TimeTool;
 
 public class KonsData extends PersistentObject {
-	public static final String VERSION = "8";
+	public static final String VERSION = "9";
 	public static final String PLUGIN_ID = "com.hilotec.elexis.kgview";
 	
 	private static final String TABLENAME = "COM_HILOTEC_ELEXIS_KGVIEW_KONSDATA";
@@ -29,8 +29,12 @@ public class KonsData extends PersistentObject {
 	public static final String FLD_EKG				= "EKG";
 	public static final String FLD_KONSZEIT			= "KonsZeit";
 	public static final String FLD_KONSBEGINN		= "KonsBeginn";
-	public static final String FLD_ISTTELEFON		= "IstTelefon";
+	public static final String FLD_KONSTYP			= "KonsTyp";
 	public static final String FLD_AUTOR			= "Autor";
+
+	public static final int KONSTYP_NORMAL = 0;
+	public static final int KONSTYP_TELEFON = 1;
+	public static final int KONSTYP_HAUSBESUCH = 2;
 
 	// Felder an denen Aenderungen nur durch den Autor durchgefuehrt werden
 	// duerfen.
@@ -58,7 +62,7 @@ public class KonsData extends PersistentObject {
 				"EKG",
 				"KonsZeit",
 				"KonsBeginn",
-				"IstTelefon",
+				"KonsTyp",
 				"Autor");
 		checkTable();
 	}
@@ -82,7 +86,7 @@ public class KonsData extends PersistentObject {
 			+ "  EKG			TEXT, "
 			+ "  KonsZeit 		BIGINT DEFAULT 0, "
 			+ "  KonsBeginn     BIGINT,  "
-			+ "  IstTelefon		CHAR(1) DEFAULT '0', "
+			+ "  KonsTyp		SMALLINT DEFAULT 0, "
 			+ "  Autor          VARCHAR(25)  "
 			+ ");"
 			+ "INSERT INTO " + TABLENAME + " (ID, JetzLeiden) VALUES "
@@ -136,6 +140,16 @@ public class KonsData extends PersistentObject {
 			+ "UPDATE " + TABLENAME + " SET JetzLeiden = '8' WHERE"
 			+ "  ID LIKE 'VERSION';";
 
+	private static final String up_8to9 =
+		"ALTER TABLE " + TABLENAME
+			+ "  ADD KonsTyp	SMALLINT DEFAULT 0 AFTER IstTelefon;"
+			+ "UPDATE " + TABLENAME + " SET KonsTyp = 1 WHERE"
+			+ "  IstTelefon = 1;"
+			+ "ALTER TABLE " + TABLENAME
+			+ "  DROP IstTelefon; "
+			+ "UPDATE " + TABLENAME + " SET JetzLeiden = '9' WHERE"
+			+ "  ID LIKE 'VERSION';";
+
 	private static void checkTable() {
 		KonsData check = load("VERSION");
 		if (!check.exists()) {
@@ -155,6 +169,8 @@ public class KonsData extends PersistentObject {
 				createOrModifyTable(up_6to7);
 			if (check.getJetzigesLeiden().equals("7"))
 				createOrModifyTable(up_7to8);
+			if (check.getJetzigesLeiden().equals("8"))
+				createOrModifyTable(up_8to9);
 		}
 	}
 
@@ -257,9 +273,10 @@ public class KonsData extends PersistentObject {
 		return Konsultation.load(getId());
 	}
 	
-	public boolean getIstTelefon() {
-		String tel = get(FLD_ISTTELEFON);
-		return !(StringTool.isNothing(tel) || tel.equals("0"));
+	public int getKonsTyp() {
+		String tel = get(FLD_KONSTYP);
+		tel = (StringTool.isNothing(tel) ? "0" : tel);
+		return Integer.parseInt(tel);
 	}
 
 	public Anwender getAutor() {
@@ -315,8 +332,8 @@ public class KonsData extends PersistentObject {
 		set(FLD_KONSZEIT, Long.toString(zeit));
 	}
 	
-	public void setIstTelefon(boolean b) {
-		set(FLD_ISTTELEFON, (b ? "1" : "0"));
+	public void setKonsTyp(int typ) {
+		set(FLD_KONSTYP, Integer.toString(typ));
 	}
 
 	public void setAutor(Anwender anw) {
