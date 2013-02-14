@@ -23,6 +23,13 @@
       </view>
       <view
             category="com.hilotec.elexis.kgview.category"
+            class="com.hilotec.elexis.kgview.ArchivKGPrintView"
+            id="com.hilotec.elexis.kgview.ArvchivKGPrintView"
+            name="Archiv-KG Drucken"
+            restorable="true">
+      </view>
+      <view
+            category="com.hilotec.elexis.kgview.category"
             class="com.hilotec.elexis.kgview.diagnoseliste.DiagnoselisteView"
             id="com.hilotec.elexis.kgview.DiagnoselisteView"
             name="Diagnoseliste"

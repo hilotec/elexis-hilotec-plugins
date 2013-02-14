@@ -18,6 +18,9 @@ import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.events.IHyperlinkListener;
 import org.eclipse.ui.forms.widgets.FormText;
@@ -38,6 +41,7 @@ import ch.elexis.data.Anwender;
 import ch.elexis.data.Fall;
 import ch.elexis.data.Konsultation;
 import ch.elexis.data.Patient;
+import ch.elexis.util.SWTHelper;
 import ch.elexis.util.ViewMenus;
 import ch.rgw.tools.StringTool;
 import ch.rgw.tools.TimeTool;
@@ -178,6 +182,7 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 	private Action actKonsAendern;
 	private Action actAutoAkt;
 	private Action actSortierungUmk;
+	private Action actDrucken;
 	private boolean sortRev;
 
 	
@@ -209,8 +214,9 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 		createActions();
 		ViewMenus menus = new ViewMenus(getViewSite());
 		menus.createToolbar(actNeueKons, actNeueTelKons, actNeuerHausbesuch,
-				null, actKonsAendern, actAutoAkt, actSortierungUmk);
-		
+				null, actKonsAendern, actAutoAkt, actSortierungUmk,
+				null, actDrucken);
+
 		// Aktuell ausgewaehlten Patienten laden
 		Patient pat = (Patient) ElexisEventDispatcher.getSelected(Patient.class);
 		loadPatient(pat);
@@ -467,6 +473,36 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 			public void run() {
 				sortRev = isChecked();
 				refresh();
+			}
+		};
+		actDrucken = new Action("KG Drucken") {
+			{
+				setImageDescriptor(Desk.getImageDescriptor(Desk.IMG_PRINTER));
+				setToolTipText("Krankengeschichte zum Drucken vorbereiten");
+			}
+
+			@Override
+			public void run() {
+				IWorkbenchPage p = PlatformUI.getWorkbench().
+						getActiveWorkbenchWindow().getActivePage();
+				ArchivKGPrintView apv = null;
+				try {
+					apv = (ArchivKGPrintView) p.showView(ArchivKGPrintView.ID);
+				} catch (PartInitException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				Konsultation kons = (Konsultation)
+						ElexisEventDispatcher.getSelected(Konsultation.class);
+				if (kons == null) {
+					SWTHelper.showError("Keine Konsultation aktiv", "Es wird" +
+							"eine aktive Konsultation benötigt um die KG " +
+							"drucken und ablegen zu können.");
+					return;
+				}
+				apv.doPrint(kons, null, sortRev);
+				p.hideView(apv);
 			}
 		};
 	}
