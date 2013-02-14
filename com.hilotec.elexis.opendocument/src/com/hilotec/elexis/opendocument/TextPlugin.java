@@ -182,6 +182,8 @@ public class TextPlugin implements ITextPlugin {
 					
 					if ((flags & SWT.BOLD) != 0) {
 						stp.setFoFontWeightAttribute("bold");
+					} else {
+						stp.setFoFontWeightAttribute("normal");
 					}
 					if ((flags & SWT.ITALIC) != 0) {
 						stp.setFoFontStyleAttribute("italic");
