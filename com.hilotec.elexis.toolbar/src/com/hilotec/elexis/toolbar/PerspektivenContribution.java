@@ -1,6 +1,7 @@
 package com.hilotec.elexis.toolbar;
 
 import org.eclipse.jface.action.ContributionItem;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -31,7 +32,8 @@ public class PerspektivenContribution extends ContributionItem {
 			if (pd == null) continue;
 			
 			ToolItem ti = new ToolItem(parent, SWT.PUSH);
-			Image im = pd.getImageDescriptor().createImage();
+			ImageDescriptor idesc = pd.getImageDescriptor();
+			Image im = (idesc != null ? idesc.createImage() : null);
 			if (im != null)
 				ti.setImage(im);
 			else
