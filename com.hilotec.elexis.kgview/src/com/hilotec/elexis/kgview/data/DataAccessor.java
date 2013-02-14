@@ -56,7 +56,11 @@ public class DataAccessor implements IDataAccess {
 	private Result<Object> generiereMedikarte(Patient pat) {
 		List<Prescription> l = MedikarteHelpers.
 			medikarteMedikation(pat, false);
-		
+
+		// Spezialfall: keine Eintraege
+		if (l.isEmpty())
+			return new Result<Object>(new String[0][]);
+
 		// Liste aller Einnahmevorschriften und Medis gruppiert nach EV
 		SortedSet<String> evs = new TreeSet<String>();
 		HashMap<String, List<Prescription>> prescs =
