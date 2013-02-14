@@ -363,7 +363,7 @@ public class KonsData extends PersistentObject {
 				// Wenn das Feld leer ist, und alle anderen KG-Felder leer sind,
 				// wird der Autor zurueckgesesetzt.
 				boolean nonempty = false;
-				for (int i = 0; i < KGFIELDS.length && nonempty; i++) {
+				for (int i = 0; i < KGFIELDS.length && !nonempty; i++) {
 					nonempty |= !StringTool.isNothing(get(KGFIELDS[i]));
 				}
 				if (!nonempty) set(FLD_AUTOR, "");
