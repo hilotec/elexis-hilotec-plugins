@@ -78,7 +78,7 @@ public class MesswertTypData extends MesswertBase implements IMesswertTyp {
 		
 		refChoices =
 			Messung.getPatientMessungen(patient,
-				MessungKonfiguration.getInstance().getTypeByName(refType));
+				MessungKonfiguration.getInstance().getTypeByName(refType), true);
 		for (int i = 0; i < refChoices.size(); i++) {
 			Messung messung = refChoices.get(i);
 			((Combo) widget).add(messung.getDatum(), i);

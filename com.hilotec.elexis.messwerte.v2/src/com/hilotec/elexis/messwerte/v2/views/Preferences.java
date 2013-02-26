@@ -25,10 +25,12 @@ import ch.elexis.preferences.inputs.InexistingFileOKFileFieldEditor;
 public class Preferences extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 	public static final String CONFIG_FILE = "findings/hilotec/configfile";
 	public static final String CONFIG_PATINFO = "findings/hilotec/patientinfo";
+	public static final String CONFIG_ORDERDESC = "findings/hilotec/orderdesc";
 	
 	public void init(IWorkbench workbench){
 		setPreferenceStore(new SettingsPreferenceStore(Hub.localCfg));
 		getPreferenceStore().setDefault(CONFIG_PATINFO, true);
+		getPreferenceStore().setDefault(CONFIG_ORDERDESC, false);
 	}
 	
 	@Override
@@ -37,7 +39,8 @@ public class Preferences extends FieldEditorPreferencePage implements IWorkbench
 			getFieldEditorParent()));
 		addField(new BooleanFieldEditor(CONFIG_PATINFO, "Patienteninfo anzeigen",
 			getFieldEditorParent()));
-		
+		addField(new BooleanFieldEditor(CONFIG_ORDERDESC, "Absteigend sortieren",
+			getFieldEditorParent()));
 	}
 	
 	@Override

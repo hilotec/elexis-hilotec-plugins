@@ -28,6 +28,8 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -67,6 +69,7 @@ public class MessungenUebersicht extends ViewPart implements ElexisEventListener
 	private ScrolledForm form;
 	private ArrayList<MessungstypSeite> seiten;
 	private CTabFolder tabsfolder;
+	private boolean orderDesc;
 	
 	private Action neuAktion;
 	private Action editAktion;
@@ -79,6 +82,7 @@ public class MessungenUebersicht extends ViewPart implements ElexisEventListener
 		config = MessungKonfiguration.getInstance();
 		seiten = new ArrayList<MessungstypSeite>();
 		showPatientInfo = Hub.localCfg.get(Preferences.CONFIG_PATINFO, true);
+		orderDesc = Hub.localCfg.get(Preferences.CONFIG_ORDERDESC, false);
 	}
 	
 	/**
@@ -119,6 +123,13 @@ public class MessungenUebersicht extends ViewPart implements ElexisEventListener
 			cols[i] = new TableColumn(table, SWT.NONE);
 			cols[i].setText(Messages.MessungenUebersicht_0);
 			cols[i].setWidth(80);
+			cols[i].addSelectionListener(new SelectionListener() {
+				public void widgetSelected(SelectionEvent arg0) {
+					orderDesc = !orderDesc;
+					aktualisieren();
+				}
+				public void widgetDefaultSelected(SelectionEvent arg0) {}
+			});
 			i++;
 			for (IMesswertTyp dft : typ.getMesswertTypen()) {
 				cols[i] = new TableColumn(table, SWT.NONE);
@@ -153,7 +164,7 @@ public class MessungenUebersicht extends ViewPart implements ElexisEventListener
 				return;
 			}
 			
-			for (Messung messung : Messung.getPatientMessungen(patient, typ)) {
+			for (Messung messung : Messung.getPatientMessungen(patient, typ, !orderDesc)) {
 				TableItem ti = new TableItem(table, SWT.NONE);
 				ti.setData(messung);
 				

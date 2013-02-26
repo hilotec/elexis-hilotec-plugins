@@ -15,6 +15,8 @@
 package com.hilotec.elexis.messwerte.v2.data;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import com.hilotec.elexis.messwerte.v2.Activator;
@@ -182,17 +184,32 @@ public class Messung extends PersistentObject {
 	 *            Der Patient
 	 * @param typ
 	 *            Typ der zu suchenden Messungen
-	 * 
+	 * @param aufsteigend
+	 *            Aufsteigend sortieren?
 	 * @return Liste mit den Messungen
 	 */
-	public static List<Messung> getPatientMessungen(Patient patient, MessungTyp typ){
+	public static List<Messung> getPatientMessungen(Patient patient, MessungTyp typ,
+													final boolean aufsteigend)
+	{
 		Query<Messung> query = new Query<Messung>(Messung.class);
 		query.add("PatientID", Query.EQUALS, patient.getId());
 		if (typ != null) {
 			query.and();
 			query.add("TypName", Query.EQUALS, typ.getName());
 		}
-		return query.execute();
+		List<Messung> result = query.execute();
+
+		Comparator<Messung> comp = new Comparator<Messung>() {
+			public int compare(Messung arg0, Messung arg1) {
+				TimeTool tt0 = new TimeTool(arg0.getDatum());
+				TimeTool tt1 = new TimeTool(arg1.getDatum());
+				int res = tt0.compareTo(tt1);
+				if (!aufsteigend) res *= -1;
+				return res;
+			}
+		};
+		Collections.sort(result, comp);
+		return result;
 	}
 	
 	/**

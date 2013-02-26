@@ -180,7 +180,7 @@ public class DataAccessor implements IDataAccess {
 		// Spaltenueberschriften fuer Tabelle holen
 		
 		// Alle Messungen dieses Patienten und Typs holen
-		List<Messung> messungen = Messung.getPatientMessungen(patient, typ);
+		List<Messung> messungen = Messung.getPatientMessungen(patient, typ, true);
 		
 		Messung messung = null;
 		if (dates.equals("all")) {
