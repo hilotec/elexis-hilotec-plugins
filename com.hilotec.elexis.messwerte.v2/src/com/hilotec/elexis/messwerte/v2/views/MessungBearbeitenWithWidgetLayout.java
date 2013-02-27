@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Widget;
 
 import ch.elexis.util.SWTHelper;
@@ -53,6 +54,7 @@ public class MessungBearbeitenWithWidgetLayout extends TitleAreaDialog {
 	private List<Messwert> shownMesswerte;
 	private List<Messwert> calcFields;
 	private DatePickerCombo dateWidget;
+	private Text zeit;
 	private String tabtitle;
 	
 	private Listener listener = new Listener() {
@@ -103,7 +105,15 @@ public class MessungBearbeitenWithWidgetLayout extends TitleAreaDialog {
 		dateWidget = new DatePickerCombo(comp, SWT.NONE);
 		dateWidget.setDate(new TimeTool(messung.getDatum()).getTime());
 		dateWidget.setLayoutData(SWTHelper.getFillGridData(1, true, 1, false));
-		
+
+		new Label(comp, SWT.NONE).setText(Messages.MessungenUebersicht_23);
+		zeit = SWTHelper.createText(comp, 1, SWT.WRAP);
+		zeit.setLayoutData(SWTHelper.getFillGridData(1, true, 1, false));
+		String t = messung.getZeit();
+		if (!t.isEmpty())
+			t = t.substring(0, 5);
+		zeit.setText(t);
+
 		messwerte = messung.getMesswerte();
 		MessungTyp typ = messung.getTyp();
 		
@@ -230,6 +240,17 @@ public class MessungBearbeitenWithWidgetLayout extends TitleAreaDialog {
 	public void okPressed(){
 		boolean validValues = true;
 		TimeTool tt = new TimeTool(dateWidget.getDate().getTime());
+
+		String t = zeit.getText();
+		if (!t.isEmpty() && !t.matches("[0-9]{2}:[0-9]{2}")) {
+			setMessage("Ungueltige Zeit: Muss entweder leer oder im Format" +
+				"HH:MM sein");
+			return;
+		} else if (!t.isEmpty()) {
+			t += ":00";
+		}
+
+		messung.setZeit(t);
 		messung.setDatum(tt.toString(TimeTool.DATE_GER));
 		for (Messwert mw : shownMesswerte) {
 			IMesswertTyp typ = mw.getTyp();

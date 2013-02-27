@@ -116,21 +116,30 @@ public class MessungenUebersicht extends ViewPart implements ElexisEventListener
 			table.setHeaderVisible(true);
 			table.setLinesVisible(true);
 			
-			cols = new TableColumn[typ.getMesswertTypen().size() + 1];
-			
-			// Spalten anlegen
-			int i = 0;
-			cols[i] = new TableColumn(table, SWT.NONE);
-			cols[i].setText(Messages.MessungenUebersicht_0);
-			cols[i].setWidth(80);
-			cols[i].addSelectionListener(new SelectionListener() {
+			cols = new TableColumn[typ.getMesswertTypen().size() + 2];
+
+			SelectionListener sortListener = new SelectionListener() {
 				public void widgetSelected(SelectionEvent arg0) {
 					orderDesc = !orderDesc;
 					aktualisieren();
 				}
 				public void widgetDefaultSelected(SelectionEvent arg0) {}
-			});
+			};
+
+			// Spalten anlegen
+			int i = 0;
+			cols[i] = new TableColumn(table, SWT.NONE);
+			cols[i].setText(Messages.MessungenUebersicht_0);
+			cols[i].setWidth(80);
+			cols[i].addSelectionListener(sortListener);
 			i++;
+
+			cols[i] = new TableColumn(table, SWT.NONE);
+			cols[i].setText(Messages.MessungenUebersicht_23);
+			cols[i].setWidth(40);
+			cols[i].addSelectionListener(sortListener);
+			i++;
+
 			for (IMesswertTyp dft : typ.getMesswertTypen()) {
 				cols[i] = new TableColumn(table, SWT.NONE);
 				if (dft.getUnit().equals("")) { //$NON-NLS-1$
@@ -170,6 +179,11 @@ public class MessungenUebersicht extends ViewPart implements ElexisEventListener
 				
 				int i = 0;
 				ti.setText(i++, messung.getDatum());
+
+				String t = messung.getZeit();
+				t = t.isEmpty() ? t : t.substring(0, 5);
+				ti.setText(i++, t);
+
 				for (Messwert mwrt : messung.getMesswerte()) {
 					ti.setText(i++, mwrt.getDarstellungswert());
 				}

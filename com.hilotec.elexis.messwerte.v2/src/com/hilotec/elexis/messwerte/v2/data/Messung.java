@@ -26,24 +26,33 @@ import ch.elexis.data.Patient;
 import ch.elexis.data.PersistentObject;
 import ch.elexis.data.Query;
 
+import ch.rgw.tools.StringTool;
 import ch.rgw.tools.TimeTool;
 
 public class Messung extends PersistentObject {
-	private static final String VERSION = "2";
+	private static final String VERSION = "3";
 	public static final String PLUGIN_ID = Activator.PLUGIN_ID;
 	private static final String TABLENAME = "COM_HILOTEC_ELEXIS_MESSWERTE_MESSUNGEN";
 	
 	static {
-		addMapping(TABLENAME, "PatientID", "TypName", "Datum=S:D:Datum");
+		addMapping(TABLENAME, "PatientID", "TypName", "Datum=S:D:Datum",
+			"Zeit");
 		checkTable();
 	}
 	
 	private static final String create = "CREATE TABLE " + TABLENAME + " ("
 		+ "  ID			VARCHAR(25) PRIMARY KEY, " + "  lastupdate 	BIGINT, "
 		+ "  deleted		CHAR(1) DEFAULT '0', " + "  PatientID	VARCHAR(25), "
-		+ "  TypName		VARCHAR(25), " + "  Datum		CHAR(8) " + ");" + "INSERT INTO " + TABLENAME
+		+ "  TypName		VARCHAR(25), " + "  Datum		CHAR(8) "
+		+ "  Zeit			TIME " + ");" + "INSERT INTO " + TABLENAME
 		+ " (ID, TypName) VALUES " + "	('VERSION', '" + VERSION + "');";
 	
+	private static final String up_2to3 =
+		"ALTER TABLE " + TABLENAME
+			+ "  ADD Zeit  TIME AFTER Datum;"
+			+ "UPDATE " + TABLENAME + " SET TypName = '3' WHERE"
+			+ "  ID LIKE 'VERSION';";
+
 	/**
 	 * Pruefen ob die Tabelle existiert
 	 */
@@ -51,6 +60,10 @@ public class Messung extends PersistentObject {
 		Messung check = load("VERSION");
 		if (!check.exists()) {
 			createOrModifyTable(create);
+		} else {
+			String v = check.get("TypName");
+			if (v.equals("1") || v.equals("2"))
+				createOrModifyTable(up_2to3);
 		}
 	}
 	
@@ -90,7 +103,9 @@ public class Messung extends PersistentObject {
 		create(null);
 		set("PatientID", patient.getId());
 		set("TypName", typ.getName());
-		set("Datum", new TimeTool().toString(TimeTool.DATE_GER));
+		TimeTool tt = new TimeTool();
+		set("Datum", tt.toString(TimeTool.DATE_GER));
+		set("Zeit", tt.toString(TimeTool.TIME_FULL));
 	}
 	
 	/**
@@ -110,7 +125,25 @@ public class Messung extends PersistentObject {
 	public String getDatum(){
 		return get("Datum");
 	}
-	
+
+	/**
+	 * Uhrzeit dieser Messung
+	 */
+	public String getZeit(){
+		return StringTool.unNull(get("Zeit"));
+	}
+
+	/**
+	 * TimeTool fuer Datum und Zeit initialisieren
+	 */
+	public TimeTool getTimeTool(){
+		TimeTool tt = new TimeTool(getDatum());
+		String t = getZeit();
+		if (!t.isEmpty())
+			tt.setTime(new TimeTool(t));
+		return tt;
+	}
+
 	/**
 	 * Messwert in dieser Messung anhand seines Namens holen
 	 * 
@@ -163,6 +196,16 @@ public class Messung extends PersistentObject {
 	}
 	
 	/**
+	 * @param zeit
+	 *            Uhrzeit der Messung neu setzen
+	 */
+	public void setZeit(String zeit){
+		if (zeit.isEmpty())
+			zeit = null;
+		set("Zeit", zeit);
+	}
+
+	/**
 	 * @return Typ der Messung
 	 */
 	public MessungTyp getTyp(){
@@ -201,8 +244,8 @@ public class Messung extends PersistentObject {
 
 		Comparator<Messung> comp = new Comparator<Messung>() {
 			public int compare(Messung arg0, Messung arg1) {
-				TimeTool tt0 = new TimeTool(arg0.getDatum());
-				TimeTool tt1 = new TimeTool(arg1.getDatum());
+				TimeTool tt0 = arg0.getTimeTool();
+				TimeTool tt1 = arg1.getTimeTool();
 				int res = tt0.compareTo(tt1);
 				if (!aufsteigend) res *= -1;
 				return res;

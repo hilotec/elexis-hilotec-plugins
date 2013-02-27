@@ -20,6 +20,7 @@ public class Messages extends NLS {
 	public static String MessungenUebersicht_20;
 	public static String MessungenUebersicht_21;
 	public static String MessungenUebersicht_22;
+	public static String MessungenUebersicht_23;
 	public static String MessungenUebersicht_3;
 	public static String MessungenUebersicht_4;
 	public static String MessungenUebersicht_5;

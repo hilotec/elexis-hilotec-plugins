@@ -21,6 +21,7 @@ import java.util.List;
 
 import com.hilotec.elexis.messwerte.v2.data.typen.IMesswertTyp;
 import com.hilotec.elexis.messwerte.v2.data.typen.MesswertTypData;
+import com.hilotec.elexis.messwerte.v2.views.Messages;
 
 import ch.elexis.data.Patient;
 import ch.elexis.data.PersistentObject;
@@ -62,6 +63,8 @@ public class DataAccessor implements IDataAccess {
 	private void spaltentitelEintragen(MessungTyp typ, String[] ziel){
 		List<IMesswertTyp> feldtypen = typ.getMesswertTypen();
 		int i = 0;
+		ziel[i++] = Messages.MessungenUebersicht_0;
+		ziel[i++] = Messages.MessungenUebersicht_23;
 		for (IMesswertTyp dft : feldtypen) {
 			ziel[i++] = dft.getTitle();
 		}
@@ -71,7 +74,7 @@ public class DataAccessor implements IDataAccess {
 	 * Aus Liste von Messungen Result-Objekt(Tabelle) erstellen
 	 */
 	private Result<Object> erstelleResultTabelle(MessungTyp typ, List<Messung> messungen){
-		String values[][] = new String[messungen.size() + 1][typ.getMesswertTypen().size() + 1];
+		String values[][] = new String[messungen.size() + 1][typ.getMesswertTypen().size() + 2];
 		
 		// Spaltenueberschriften in erste Zeile eintragen
 		spaltentitelEintragen(typ, values[0]);
@@ -81,6 +84,8 @@ public class DataAccessor implements IDataAccess {
 		for (Messung messung : messungen) {
 			int j = 0;
 			values[i][j++] = messung.getDatum();
+			String t = messung.getZeit();
+			values[i][j++] = (t.isEmpty() ? t : t.substring(0, 5));
 			for (Messwert wert : messung.getMesswerte()) {
 				values[i][j++] = wert.getDarstellungswert();
 			}
@@ -121,7 +126,7 @@ public class DataAccessor implements IDataAccess {
 			
 			TimeTool cur = null;
 			for (Messung m : messungen) {
-				TimeTool vgl = new TimeTool(m.getDatum());
+				TimeTool vgl = m.getTimeTool();
 				if ((vgl.compareTo(lowerbound) >= 0) && (vgl.compareTo(upperbound) <= 0)
 					&& ((cur == null) || (cur.compareTo(vgl) * factor <= 0))) {
 					messung = m;
@@ -136,7 +141,7 @@ public class DataAccessor implements IDataAccess {
 			}
 			
 			for (Messung m : messungen) {
-				TimeTool vgl = new TimeTool(m.getDatum());
+				TimeTool vgl = m.getTimeTool();
 				if (vgl.isEqual(find)) {
 					messung = m;
 					break;
