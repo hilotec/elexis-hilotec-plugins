@@ -126,6 +126,7 @@ public class ArchivKGPrintView extends ViewPart {
 		for (Konsultation k: ArchivKG.getKonsultationen(pat, reversed)) {
 			pos = processKonsultation(k, tp, pos);
 		}
+		brief.save(tp.storeToByteArray(), tp.getMimeType());
 		tp.print(null, null, true);
 	}
 }
