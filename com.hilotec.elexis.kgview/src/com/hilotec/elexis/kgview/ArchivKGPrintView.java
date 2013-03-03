@@ -57,10 +57,9 @@ public class ArchivKGPrintView extends ViewPart {
 		}
 		tp.setStyle(SWT.BOLD);
 		pos = tp.insertText(pos, styp, SWT.LEFT);
-		tp.setStyle(SWT.NORMAL);
-
 		pos = tp.insertText(pos, " " + k.getDatum() + " " + kd.getKonsBeginn(),
 				SWT.LEFT);
+		tp.setStyle(SWT.NORMAL);
 
 		if  (k.getFall() != null) {
 			pos = tp.insertText(pos, " " + k.getFall().getAbrechnungsSystem(),
