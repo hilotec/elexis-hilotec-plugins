@@ -344,7 +344,7 @@ public class MessungenUebersicht extends ViewPart implements ElexisEventListener
 					
 					// Get the headers Name (Unit); Name (Unit); ...
 					Messung headermessung = (Messung) tableitems[0].getData();
-					String headerstring = "datum;"; //$NON-NLS-1$
+					String headerstring = "datum;zeit;"; //$NON-NLS-1$
 					for (Messwert messwert : headermessung.getMesswerte()) {
 						headerstring =
 							headerstring + messwert.getTyp().getName() + "(" //$NON-NLS-1$
@@ -356,6 +356,7 @@ public class MessungenUebersicht extends ViewPart implements ElexisEventListener
 					for (int i = 0; i < tableitems.length; i++) {
 						Messung messung = (Messung) tableitems[i].getData();
 						String messungstring = messung.getDatum() + ";"; //$NON-NLS-1$
+						messungstring += messung.getZeit() + ";";
 						for (Messwert messwert : messung.getMesswerte()) {
 							messungstring =
 								messungstring
