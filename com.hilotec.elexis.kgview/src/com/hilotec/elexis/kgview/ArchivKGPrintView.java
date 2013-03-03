@@ -77,7 +77,7 @@ public class ArchivKGPrintView extends ViewPart {
 
 		pos = addParagraph("Jetziges Leiden", kd.getJetzigesLeiden(),
 			kd.getJetzigesLeidenICPC(), tp, pos);
-		pos = addParagraph("Lokalstatus", kd.getLokalstatus(), tp, pos);
+		pos = addParagraph("Status", kd.getLokalstatus(), tp, pos);
 		pos = addParagraph("Röntgen", kd.getRoentgen(), tp, pos);
 		pos = addParagraph("EKG", kd.getEKG(), tp, pos);
 		pos = addParagraph("Diagnose", kd.getDiagnose(),

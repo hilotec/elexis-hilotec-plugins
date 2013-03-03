@@ -323,7 +323,7 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 		
 		addParagraph("Jetziges Leiden", kd.getJetzigesLeiden(),
 			kd.getJetzigesLeidenICPC(), sb);
-		addParagraph("Lokalstatus", kd.getLokalstatus(), sb);
+		addParagraph("Status", kd.getLokalstatus(), sb);
 		addParagraph("Röntgen", kd.getRoentgen(), sb);
 		addParagraph("EKG", kd.getEKG(), sb);
 		addParagraph("Diagnose", kd.getDiagnose(),
