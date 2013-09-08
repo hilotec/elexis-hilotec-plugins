@@ -318,7 +318,7 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 			if (StringTool.isNothing(sAutor))
 				sAutor = autor.getLabel();
 		}
-		sb.append(" (" + sAutor + ")");
+		sb.append(" (" + cleanUp(sAutor) + ")");
 		sb.append("<br/>");
 		
 		addParagraph("Jetziges Leiden", kd.getJetzigesLeiden(),
@@ -346,7 +346,7 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 				(icpc == null || icpc.isEmpty()))
 			return;
 
-		sb.append("<b>" + titel + "</b><br/>");
+		sb.append("<b>" + cleanUp(titel) + "</b><br/>");
 		if (icpc != null && !icpc.isEmpty())
 			sb.append("ICPC: " + icpc.replace(",", ", ") + "<br/>");
 		sb.append(cleanUp(text));
@@ -354,7 +354,8 @@ public class ArchivKG extends ViewPart implements ElexisEventListener,
 	}
 	
 	private String cleanUp(String text) {
-		return text.replace(">", "&gt;").
+		return text.replace("&", "&amp;").
+			replace(">", "&gt;").
 			replace("<", "&lt;").
 			replace("\n", "<br/>");
 	}
