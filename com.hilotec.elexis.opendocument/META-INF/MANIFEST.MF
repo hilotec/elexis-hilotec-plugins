@@ -4,7 +4,7 @@ Bundle-ClassPath: .,
  lib/odfdom.jar,
  lib/xercesImpl.jar,
  lib/xml-apis.jar
-Bundle-Version: 0.0.2
+Bundle-Version: 0.0.3
 Bundle-Name: Hilotec_OpenDocument
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: com.hilotec.elexis.opendocument;singleton:=true
@@ -13,3 +13,4 @@ Require-Bundle: ch.elexis;bundle-version="2.1.0",
  org.eclipse.ui,
  org.eclipse.core.runtime,
  ch.rgw.utility
+Export-Package: com.hilotec.elexis.opendocument.export

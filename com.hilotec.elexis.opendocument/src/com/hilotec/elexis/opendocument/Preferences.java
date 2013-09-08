@@ -17,6 +17,8 @@ public class Preferences extends FieldEditorPreferencePage implements
 	public static final String P_EDITOR = BASE + "editorpath";
 	public static final String P_EDITARGS = BASE + "editargs";
 	public static final String P_PRINTARGS = BASE + "printargs";
+	public static final String P_PDFCONVERTER = BASE + "pdfpath";
+	public static final String P_PDFARGS = BASE + "pdfargs";
 
 	SettingsPreferenceStore prefs=new SettingsPreferenceStore(Hub.localCfg);
 	
@@ -33,11 +35,18 @@ public class Preferences extends FieldEditorPreferencePage implements
 				getFieldEditorParent()));
 		addField(new MultilineFieldEditor(P_EDITARGS,
 				"Argumente zum Editieren",
-				5, SWT.V_SCROLL, true,
+				5, SWT.V_SCROLL, false,
 				getFieldEditorParent()));
 		addField(new MultilineFieldEditor(P_PRINTARGS,
 				"Argumente zum Drucken",
-				5, SWT.V_SCROLL, true,
+				5, SWT.V_SCROLL, false,
+				getFieldEditorParent()));
+		addField(new FileFieldEditor(P_PDFCONVERTER,
+				"PDF-Konverter",
+				getFieldEditorParent()));
+		addField(new MultilineFieldEditor(P_PDFARGS,
+				"Argumente fuer PDF-Konvertierung",
+				5, SWT.V_SCROLL, false,
 				getFieldEditorParent()));
 	}
 

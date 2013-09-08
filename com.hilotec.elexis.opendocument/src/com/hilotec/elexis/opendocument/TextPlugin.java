@@ -20,6 +20,8 @@ import javax.xml.xpath.XPathExpressionException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -67,6 +69,8 @@ import org.odftoolkit.odfdom.dom.element.text.TextSpanElement;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+
+import com.hilotec.elexis.opendocument.Export.Exporter;
 
 import ch.elexis.Desk;
 import ch.elexis.Hub;
@@ -344,7 +348,38 @@ public class TextPlugin implements ITextPlugin {
 			}
 		}
 	}
-		
+
+	public File exportPDF() {
+		if (file == null || !ensureClosed()) {
+			return null;
+		}
+
+		odtSync();
+
+		File pdffile = new File(
+			file.getAbsoluteFile().getPath().replaceAll("\\.odt$", ".pdf"));
+		String pdfconv = Hub.localCfg.get(Preferences.P_PDFCONVERTER, "");
+		String pdfargs = Hub.localCfg.get(Preferences.P_PDFARGS, "");
+		if (pdfconv.length() == 0) {
+			SWTHelper.showError("Kein Konvertierungsbefehl gesetzt",
+					"In den Einstellungen wurde kein Befehl zum Konvertieren " +
+					"nach PDF konfiguriert.");
+			return null;
+		}
+
+		String args[] = (pdfconv + "\n" + pdfargs + "\n" + file.getAbsolutePath()).split("[\n\r]+");
+		ProcessBuilder pb = new ProcessBuilder(args);
+		try {
+			pb.directory(file.getAbsoluteFile().getParentFile());
+			final Process convert = pb.start();
+			convert.waitFor();
+			return pdffile;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	public boolean print(String toPrinter, String toTray, boolean wait) {
 		if (file == null || !ensureClosed()) {
 			return false;
@@ -395,7 +430,25 @@ public class TextPlugin implements ITextPlugin {
 					importFile();
 				}
 			});
-			/* open_button.setEnabled(false); */
+
+			Composite exporters = new Composite(parent, SWT.NONE);
+			exporters.setLayout(new GridLayout());
+			Exporter[] exps = Export.getExporters();
+			for (Exporter e: exps) {
+				Button b = new Button(exporters, SWT.PUSH);
+				b.setText(e.getLabel());
+				b.setData(e);
+				b.addSelectionListener(new SelectionAdapter() {
+					@Override
+					public void widgetSelected(SelectionEvent e) {
+						Button b = (Button) e.widget;
+						Exporter ex = (Exporter) b.getData();
+						File f = exportPDF();
+						if (f != null) ex.export(f.getPath());
+					}
+				});
+			}
+			exporters.update();
 		}
 
 		return comp;
@@ -502,6 +555,7 @@ public class TextPlugin implements ITextPlugin {
 
 		return true;
 	}
+
 
 	/**
 	 * Ersetzt Tabs in einem Text-Node
