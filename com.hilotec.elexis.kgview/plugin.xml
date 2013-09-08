@@ -123,6 +123,13 @@
             name="Risikofaktoren"
             restorable="true">
       </view>
+      <view
+            category="com.hilotec.elexis.kgview.category.patientenfelder"
+            class="com.hilotec.elexis.kgview.patientenfelder.AllergienView"
+            id="com.hilotec.elexis.kgview.AllergienView"
+            name="Allergien"
+            restorable="true">
+      </view>
       <category
             id="com.hilotec.elexis.kgview.category.konsfelder"
             name="Hilotec KG - Konsultationsfelder">
