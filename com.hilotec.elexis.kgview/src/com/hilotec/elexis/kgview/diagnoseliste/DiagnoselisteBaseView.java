@@ -11,25 +11,24 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
+import org.eclipse.nebula.widgets.grid.Grid;
+import org.eclipse.nebula.widgets.grid.GridColumn;
+import org.eclipse.nebula.widgets.grid.GridItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.HTMLTransfer;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.part.ViewPart;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -53,55 +52,6 @@ import ch.elexis.util.SWTHelper;
 import ch.elexis.util.ViewMenus;
 import ch.rgw.tools.StringTool;
 
-/*
- * Helper class to draw multiline tree items, kind of ugly, but according
- * to the eclipse forum there is no other way at the moment.
- *
- * Derived From: http://git.eclipse.org/c/platform/
- *  + eclipse.platform.swt.git/tree/examples/org.eclipse.swt.snippets/
- *  + src/org/eclipse/swt/snippets/Snippet227.java
- * Copyright (c) 2000, 2006 IBM Corporation and others (EPL)
- */
-class MultilinePaintListener implements Listener {
-	public void handleEvent(Event event) {
-		switch(event.type) {
-			case SWT.MeasureItem: {
-				TreeItem item = (TreeItem)event.item;
-				String text = getText(item, event.index);
-				Point size = event.gc.textExtent(text);
-				event.width = size.x;
-				event.height = Math.max(event.height, size.y);
-				break;
-			}
-			case SWT.PaintItem: {
-				TreeItem item = (TreeItem)event.item;
-				String text = getText(item, event.index);
-				Point size = event.gc.textExtent(text);
-				int offset2 = event.index == 0 ? Math.max(0, (event.height - size.y) / 2) : 0;
-				event.gc.drawText(text, event.x, event.y + offset2, true);
-				break;
-			}
-			case SWT.EraseItem: {
-				event.detail &= ~SWT.FOREGROUND;
-				break;
-			}
-		}
-	}
-	String getText(TreeItem item, int column) {
-		String text = item.getText(column);
-		/*if (column != 0) {
-			TreeItem parent = item.getParentItem();
-			int index = parent == null ? tree.indexOf(item) : parent.indexOf(item);
-			if ((index+column) % 3 == 1){
-				text +="\nnew line";
-			}
-			if ((index+column) % 3 == 2) {
-				text +="\nnew line\nnew line";
-			}
-		}*/
-		return text;
-	}
-}
 
 /**
  * Nicht-persistente Representation eines Diagnosebaums.
@@ -153,7 +103,7 @@ class DNode {
  */
 class DLDialog extends TitleAreaDialog {
 	private DNode di;
-	private Tree tree;
+	private Grid grid;
 
 	public DLDialog(Shell parentShell, DNode di) {
 		super(parentShell);
@@ -170,16 +120,20 @@ class DLDialog extends TitleAreaDialog {
 		comp.setLayout(new GridLayout());
 		comp.setLayoutData(SWTHelper.getFillGridData(1, true, 1, false));
 
-		tree = new Tree(comp, SWT.NONE);
-		tree.setLayoutData(SWTHelper.getFillGridData(1, true, 1, false));
-		final TreeEditor editor = new TreeEditor(tree);
-		editor.grabHorizontal = true;
-		editor.grabVertical = true;
+		grid = new Grid(comp, SWT.V_SCROLL);
+		grid.setLayoutData(SWTHelper.getFillGridData(1, true, 1, false));
 
-		MultilinePaintListener mlListener = new MultilinePaintListener();
-		tree.addListener(SWT.MeasureItem, mlListener);
-		tree.addListener(SWT.PaintItem, mlListener);
-		tree.addListener(SWT.EraseItem, mlListener);
+		final GridColumn gc = new GridColumn(grid, SWT.NONE);
+		gc.setWidth(500);
+		gc.setWordWrap(true);
+		gc.setTree(true);
+
+		grid.addControlListener(new ControlListener() {
+			public void controlResized(ControlEvent e) {
+				gc.setWidth(grid.getSize().x - 2 * grid.getBorderWidth());
+			}
+			public void controlMoved(ControlEvent e) { }
+		});
 
 		addNodes(di, null);
 
@@ -187,17 +141,17 @@ class DLDialog extends TitleAreaDialog {
 		return scroll;
 	}
 
-	private void addNodes(DNode dn, TreeItem parent) {
-		TreeItem ti;
+	private void addNodes(DNode dn, GridItem parent) {
+		GridItem gi;
 		for (DNode n: dn.children) {
 			if (parent == null)
-				ti = new TreeItem(tree, 0);
+				gi = new GridItem(grid, 0);
 			else
-				ti = new TreeItem(parent, 0);
+				gi = new GridItem(parent, 0);
 
-			ti.setText(n.getClean());
-			addNodes(n, ti);
-			ti.setExpanded(true);
+			gi.setText(n.getClean());
+			addNodes(n, gi);
+			gi.setExpanded(true);
 		}
 	}
 
@@ -443,7 +397,8 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 	protected boolean allowICPC = true;
 
 
-	private Tree tree;
+	private Grid grid;
+	//private Tree tree;
 	Action actAdd;
 	Action actEdit;
 	Action actAddChild;
@@ -468,36 +423,36 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 	}
 
 
-	private void setupTI(TreeItem ti, DiagnoselisteItem di) {
+	private void setupGI(GridItem gi, DiagnoselisteItem di) {
 		String text = di.getText();
 		if (showDate)
 			text += " (" + di.getDatum() + ")";
 		if (allowICPC) {
 			text = "[" + di.getICPC() + "] " + text;
 		}
-		ti.setText(text);
-		ti.setData(di);
+		gi.setText(text);
+		gi.setData(di);
 	}
 
 	/**
-	 * Neues TreeItem für die übergebene Diagnose am angegebenen Index
+	 * Neues GridItem für die übergebene Diagnose am angegebenen Index
 	 * erstellen.
 	 */
-	private TreeItem createTI(DiagnoselisteItem di, TreeItem tip, int index) {
-		TreeItem ti;
-		if (tip == null)
-			ti = new TreeItem(tree, SWT.NONE, index);
+	private GridItem createGI(DiagnoselisteItem di, GridItem gip, int index) {
+		GridItem gi;
+		if (gip == null)
+			gi = new GridItem(grid, SWT.NONE, index);
 		else
-			ti = new TreeItem(tip, SWT.NONE, index);
-		setupTI(ti, di);
-		return ti;
+			gi = new GridItem(gip, SWT.NONE, index);
+		setupGI(gi, di);
+		return gi;
 	}
 
-	private void insertSubtree(DiagnoselisteItem dip, TreeItem tip) {
-		TreeItem ti;
+	private void insertSubtree(DiagnoselisteItem dip, GridItem gip) {
+		GridItem gi;
 		for (DiagnoselisteItem di: dip.getChildren()) {
-			ti = createTI(di, tip, di.getPosition());
-			insertSubtree(di, ti);
+			gi = createGI(di, gip, di.getPosition());
+			insertSubtree(di, gi);
 		}
 	}
 
@@ -506,7 +461,7 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 	}
 
 	private void updateTree(Patient pat) {
-		tree.removeAll();
+		grid.removeAll();
 		boolean en = (pat != null);
 
 		actAdd.setEnabled(en && canAdd);
@@ -539,73 +494,50 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 
 	@Override
 	public void createPartControl(Composite parent) {
-		tree = new Tree(parent, SWT.NONE);
+		grid = new Grid(parent, SWT.V_SCROLL);
+		grid.setTreeLinesVisible(true);
+		grid.setAutoHeight(true);
+		grid.setAutoWidth(true);
 
-		final TreeEditor editor = new TreeEditor(tree);
-		editor.horizontalAlignment = SWT.LEFT;
-		editor.grabHorizontal = true;
+		final GridColumn gc = new GridColumn(grid, SWT.NONE);
+		gc.setWidth(500);
+		gc.setWordWrap(true);
+		gc.setTree(true);
 
-		// SelectionListener um Eintraege inline bearbeiten zu koennen.
-		/*tree.addSelectionListener(new SelectionListener() {
-			public void widgetDefaultSelected(SelectionEvent e) { }
-			public void widgetSelected(SelectionEvent e) {
-				TreeItem diagItem = (TreeItem) e.item;
-				if (diagItem == null) return;
-
-	            Control old = editor.getEditor();
-	            if (old != null) old.dispose();
-
-	            Text diagEditor = new Text(tree, SWT.MULTI | SWT.WRAP);
-	            diagEditor.setData(diagItem);
-	            diagEditor.setText(diagItem.getText());
-
-	            // ModifyListener um Aenderungen zu speichern
-	            diagEditor.addModifyListener(new ModifyListener() {
-					public void modifyText(ModifyEvent e) {
-						Text te = (Text) e.widget;
-						TreeItem ti = (TreeItem) te.getData();
-						DiagnoselisteItem di = (DiagnoselisteItem) ti.getData();
-						ti.setText(te.getText());
-						di.setText(te.getText());
-					}
-				});
-	            //diagEditor.selectAll();
-	            diagEditor.setFocus();
-	            editor.setEditor(diagEditor, diagItem);
+		grid.addControlListener(new ControlListener() {
+			public void controlResized(ControlEvent e) {
+				gc.setWidth(grid.getSize().x - 2 * grid.getBorderWidth());
 			}
-		});*/
-		MultilinePaintListener mlListener = new MultilinePaintListener();
-		tree.addListener(SWT.MeasureItem, mlListener);
-		tree.addListener(SWT.PaintItem, mlListener);
-		tree.addListener(SWT.EraseItem, mlListener);
+			public void controlMoved(ControlEvent e) { }
+		});
 
 		// Drop Target um neue Eintraege zu erstellen
-		new PersistentObjectDropTarget(tree,
+		new PersistentObjectDropTarget(grid,
 				new PersistentObjectDropTarget.IReceiver()
 		{
 					@Override
 					public void dropped(PersistentObject o, DropTargetEvent e) {
 						// Ausgewaehltes Element suchen
-						TreeItem selTi = tree.getItem(
-								tree.toControl(e.x, e.y));
+						GridItem selGi = grid.getItem(
+								grid.toControl(e.x, e.y));
 						DiagnoselisteItem it = null;
-						if (selTi != null)
-							it = (DiagnoselisteItem) selTi.getData();
+						if (selGi != null)
+							it = (DiagnoselisteItem) selGi.getData();
 						else
 							it = getRoot(typ);
 
-						if (o instanceof IcpcCode && selTi != null) {
+						if (o instanceof IcpcCode && selGi != null) {
 							// ICPC2 code
 							IcpcCode i = (IcpcCode) o;
 							it.setICPC(i.getCode());
-							setupTI(selTi, it);
+							setupGI(selGi, it);
 						} else if (o instanceof KonsData) {
 							// Eintrag aus Problemliste
 							KonsData kd = (KonsData) o;
 							DiagnoselisteItem di = it.createChild();
 							di.setText(kd.getDiagnose());
 							di.setDatum(kd.getKonsultation().getDatum());
-							createTI(di, selTi, di.getPosition());
+							createGI(di, selGi, di.getPosition());
 						} else if (o instanceof DiagnoselisteItem) {
 							// Eintrag aus Diagnoseliste
 							DiagnoselisteItem d = (DiagnoselisteItem) o;
@@ -652,18 +584,18 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 					}
 		});
 
-		new PersistentObjectDragSource(tree,
+		new PersistentObjectDragSource(grid,
 				new PersistentObjectDragSource.ISelectionRenderer()
 		{
 			public List<PersistentObject> getSelection() {
-				TreeItem[] tis = tree.getSelection();
-				if (tis == null) return null;
+				GridItem[] gis = grid.getSelection();
+				if (gis == null) return null;
 
 				ArrayList<PersistentObject> res =
-					new ArrayList<PersistentObject>(tis.length);
+					new ArrayList<PersistentObject>(gis.length);
 				// Auswahl in Liste von Items umwandeln
-				for (TreeItem ti: tis) {
-					DiagnoselisteItem di = (DiagnoselisteItem) ti.getData();
+				for (GridItem gi: gis) {
+					DiagnoselisteItem di = (DiagnoselisteItem) gi.getData();
 					res.add(di);
 				}
 				return res;
@@ -671,14 +603,14 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 		});
 
 		makeActions();
-		tree.addMouseListener(new MouseListener() {
+		grid.addMouseListener(new MouseListener() {
 			public void mouseUp(MouseEvent e) {}
 			public void mouseDown(MouseEvent e) {}
 			public void mouseDoubleClick(MouseEvent e) {
 				actEdit.run();
 			}
 		});
-		tree.addKeyListener(new KeyListener() {
+		grid.addKeyListener(new KeyListener() {
 			public void keyReleased(KeyEvent e) { }
 			public void keyPressed(KeyEvent e) {
 				if (e.keyCode != SWT.DEL) return;
@@ -712,7 +644,7 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 		if (canAdd) m.add(actAddChild);
 		m.add(actDel);
 		if (allowICPC) m.add(actDelICPC);
-		menus.createControlContextMenu(tree, m.toArray(a));
+		menus.createControlContextMenu(grid, m.toArray(a));
 
 		ElexisEventDispatcher.getInstance().addListeners(this);
 		updateTree();
@@ -782,12 +714,12 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 			}
 			@Override
 			public void run() {
-				if (tree.getSelectionCount() == 0) return;
-				TreeItem ti = tree.getSelection()[0];
-				DiagnoselisteItem di = (DiagnoselisteItem) ti.getData();
+				if (grid.getSelectionCount() == 0) return;
+				GridItem gi = grid.getSelection()[0];
+				DiagnoselisteItem di = (DiagnoselisteItem) gi.getData();
 				(new DiagnoseDialog(getSite().getShell(), di, showDate,
 						allowICPC)).open();
-				setupTI(ti, di);
+				setupGI(gi, di);
 			}
 		};
 
@@ -802,7 +734,7 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 				DiagnoselisteItem di = root.createChild();
 				(new DiagnoseDialog(getSite().getShell(), di, showDate,
 						false)).open();
-				createTI(di, null, di.getPosition());
+				createGI(di, null, di.getPosition());
 			}
 		};
 
@@ -811,17 +743,17 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 			}
 			@Override
 			public void run() {
-				TreeItem[] tis = tree.getSelection();
-				if (tis.length > 0) {
-					DiagnoselisteItem di = (DiagnoselisteItem) tis[0].getData();
+				GridItem[] gis = grid.getSelection();
+				if (gis.length > 0) {
+					DiagnoselisteItem di = (DiagnoselisteItem) gis[0].getData();
 					DiagnoselisteItem ndi = di.createChild();
 
 					DiagnoseDialog dd =  new DiagnoseDialog(
 							getSite().getShell(), ndi, showDate, false);
 					if (dd.open() == DiagnoseDialog.OK) {
-						createTI(ndi, tis[0], ndi.getPosition());
+						createGI(ndi, gis[0], ndi.getPosition());
 						// Parent expanden
-						tis[0].setExpanded(true);
+						gis[0].setExpanded(true);
 					} else {
 						ndi.delete();
 					}
@@ -833,9 +765,9 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 			}
 			@Override
 			public void run() {
-				TreeItem[] tis = tree.getSelection();
-				if (tis.length > 0) {
-					DiagnoselisteItem di = (DiagnoselisteItem) tis[0].getData();
+				GridItem[] gis = grid.getSelection();
+				if (gis.length > 0) {
+					DiagnoselisteItem di = (DiagnoselisteItem) gis[0].getData();
 					if (!di.getChildren().isEmpty()) {
 						SWTHelper.alert("Es existieren noch Unterdiagnosen",
 							"Bitte zuerst alle Unterdiagnosen der zu löschenden"
@@ -846,7 +778,7 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 							"Diagnose unwiderrufbar gelöscht werden?"))
 						return;
 					di.delete();
-					tis[0].dispose();
+					gis[0].dispose();
 				}
 			}
 		};
@@ -855,12 +787,12 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 			}
 			@Override
 			public void run() {
-				TreeItem[] tis = tree.getSelection();
-				if (tis.length != 1) return;
-				DiagnoselisteItem di = (DiagnoselisteItem) tis[0].getData();
+				GridItem[] gis = grid.getSelection();
+				if (gis.length != 1) return;
+				DiagnoselisteItem di = (DiagnoselisteItem) gis[0].getData();
 				if (StringTool.isNothing(di.getICPC())) return;
 				di.setICPC("");
-				setupTI(tis[0], di);
+				setupGI(gis[0], di);
 			}
 		};
 		actClear = new Action("Alle Löschen") {
@@ -880,18 +812,20 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 			}
 			@Override
 			public void run() {
-				TreeItem[] tis = tree.getSelection();
-				if (tis.length > 0) {
-					DiagnoselisteItem di = (DiagnoselisteItem) tis[0].getData();
+				GridItem[] gis = grid.getSelection();
+				if (gis.length > 0) {
+					DiagnoselisteItem di = (DiagnoselisteItem) gis[0].getData();
 					di.moveUp();
 
-					TreeItem parent = tis[0].getParentItem();
-					tis[0].dispose();
+					GridItem parent = gis[0].getParentItem();
+					gis[0].dispose();
 
 					// Item neu erstellen an neuer Position
-					TreeItem ti = createTI(di, parent, di.getPosition());
-					insertSubtree(di, ti);
-					tree.select(ti);
+					GridItem gi = createGI(di, parent, di.getPosition());
+					insertSubtree(di, gi);
+					int idx = (parent != null ? parent.indexOf(gi) :
+							grid.indexOf(gi));
+					grid.select(idx);
 				}
 			}
 		};
@@ -900,18 +834,20 @@ public abstract class DiagnoselisteBaseView extends ViewPart
 			}
 			@Override
 			public void run() {
-				TreeItem[] tis = tree.getSelection();
-				if (tis.length > 0) {
-					DiagnoselisteItem di = (DiagnoselisteItem) tis[0].getData();
+				GridItem[] gis = grid.getSelection();
+				if (gis.length > 0) {
+					DiagnoselisteItem di = (DiagnoselisteItem) gis[0].getData();
 					di.moveDown();
 
-					TreeItem parent = tis[0].getParentItem();
-					tis[0].dispose();
+					GridItem parent = gis[0].getParentItem();
+					gis[0].dispose();
 
 					// Item neu erstellen an neuer Position
-					TreeItem ti = createTI(di, parent, di.getPosition());
-					insertSubtree(di, ti);
-					tree.select(ti);
+					GridItem gi = createGI(di, parent, di.getPosition());
+					insertSubtree(di, gi);
+					int idx = (parent != null ? parent.indexOf(gi) :
+							grid.indexOf(gi));
+					grid.select(idx);
 				}
 			}
 		};
