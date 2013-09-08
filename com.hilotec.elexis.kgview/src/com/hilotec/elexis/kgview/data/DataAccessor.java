@@ -27,7 +27,8 @@ public class DataAccessor implements IDataAccess {
 		"JetzigesLeiden", "JetzigesLeidenICPC",
 		"AllgStatus", "LokStatus",
 		"Prozedere", "ProzedereICPC",
-		"Diagnose", "DiagnoseICPC"};
+		"Diagnose", "DiagnoseICPC",
+		"EKG", "Roentgen", "Therapie", "Verlauf"};
 
 	public String getName() {
 		return "Hilotec-KG";

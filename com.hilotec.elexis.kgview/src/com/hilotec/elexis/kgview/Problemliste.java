@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jface.viewers.ColumnPixelData;
+import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -44,7 +45,7 @@ public class Problemliste extends ViewPart
 
 		TableLayout layout = new TableLayout();
 		layout.addColumnData(new ColumnPixelData(70));
-		layout.addColumnData(new ColumnPixelData(70));
+		layout.addColumnData(new ColumnWeightData(10));
 		t.setLayout(layout);
 
 		TableColumn tc = new TableColumn(t, 0);

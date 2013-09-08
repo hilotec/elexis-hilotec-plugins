@@ -8,7 +8,6 @@ import com.hilotec.elexis.kgview.Preferences;
 import com.hilotec.elexis.kgview.data.FavMedikament;
 
 import ch.elexis.data.Patient;
-import ch.elexis.data.PersistentObject;
 import ch.elexis.data.Prescription;
 import ch.elexis.data.Query;
 import ch.rgw.tools.StringTool;
