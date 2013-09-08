@@ -80,6 +80,7 @@ public class Konsliste extends ViewPart implements ElexisEventListener {
 		layout.addColumnData(new ColumnPixelData(70));
 		layout.addColumnData(new ColumnPixelData(50));
 		layout.addColumnData(new ColumnWeightData(10));
+		layout.addColumnData(new ColumnWeightData(10));
 		t.setLayout(layout);
 
 		TableColumn tc = new TableColumn(t, 0);
@@ -92,6 +93,9 @@ public class Konsliste extends ViewPart implements ElexisEventListener {
 
 		tc = new TableColumn(t, 0);
 		tc.setText("Fall");
+
+		tc = new TableColumn(t, 0);
+		tc.setText("Status");
 
 		// Inhalt
 		tv.setContentProvider(new IStructuredContentProvider() {
@@ -140,6 +144,10 @@ public class Konsliste extends ViewPart implements ElexisEventListener {
 						break;
 					case 3:
 						s = k.getFall().getLabel();
+						break;
+
+					case 4:
+						s = k.getStatusText();
 						break;
 				}
 				// Zum Mandanten passende Hintergrundfarbe
