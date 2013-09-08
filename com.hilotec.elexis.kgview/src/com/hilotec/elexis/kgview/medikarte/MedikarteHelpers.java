@@ -40,7 +40,7 @@ public class MedikarteHelpers {
 
 		// FIXME: sollte mit executed with deleted gehen
 		if (geloescht) {
-			qbe.clear();
+			qbe.clear(true);
 		}
 
 		qbe.add(Prescription.PATIENT_ID, Query.EQUALS, patient.getId());
