@@ -5,6 +5,8 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.layout.FillLayout;
@@ -38,10 +40,13 @@ abstract public class SimpleTextFView extends ViewPart {
 			public void focusLost(FocusEvent e) {
 				fieldChanged();
 			}
-			
 			public void focusGained(FocusEvent e) {}
 		});
-		
+		textfield.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				setEmpty();
+			}
+		});
 		// TraverseListener um das Standard-Tab-Verhalten zu ueberschreiben.
 		// Wir wollen mit Tab Fokus weiterbewegen.
 		textfield.addTraverseListener(new TraverseListener() {
