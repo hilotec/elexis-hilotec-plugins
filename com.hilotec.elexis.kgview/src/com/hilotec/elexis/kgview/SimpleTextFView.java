@@ -1,6 +1,8 @@
 package com.hilotec.elexis.kgview;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.TraverseEvent;
@@ -15,7 +17,7 @@ import org.eclipse.ui.part.ViewPart;
 
 abstract public class SimpleTextFView extends ViewPart {
 	private boolean canEdit = true;
-	private Text textfield;
+	protected Text textfield;
 	private String origPName;
 	protected Composite area;
 	private boolean modifiable = false;
@@ -50,9 +52,19 @@ abstract public class SimpleTextFView extends ViewPart {
 			}
 		});
 
-		GridData gd = new GridData();
+		final GridData gd = new GridData();
 		gd.horizontalAlignment = gd.verticalAlignment = GridData.FILL;
 		gd.grabExcessHorizontalSpace = gd.grabExcessVerticalSpace = true;
+		
+		// Sicherstellen dass das Textfeld mindestens 2/3 Hoehe behaelt
+		gd.minimumHeight = 2 * area.getSize().y / 3;
+		area.addControlListener(new ControlListener() {
+			public void controlResized(ControlEvent e) {
+				gd.minimumHeight = 2 * area.getSize().y / 3;
+			}
+			public void controlMoved(ControlEvent e) {}
+		});
+		
 		textfield.setLayoutData(gd);
 		
 		origPName = getPartName();

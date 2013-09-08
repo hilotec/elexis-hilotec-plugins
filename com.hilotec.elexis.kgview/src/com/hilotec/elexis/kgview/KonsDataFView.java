@@ -19,6 +19,7 @@ import ch.elexis.data.Konsultation;
 import ch.elexis.data.PersistentObject;
 import ch.elexis.icpc.IcpcCode;
 import ch.elexis.util.PersistentObjectDropTarget;
+import ch.elexis.util.PersistentObjectDropTarget.IReceiver;
 import ch.rgw.tools.StringTool;
 
 public abstract class KonsDataFView extends SimpleTextFView
@@ -49,6 +50,7 @@ public abstract class KonsDataFView extends SimpleTextFView
 		if (icpcfield == null) return;
 		icpc_list.removeAll();
 		code_list.clear();
+		area.layout();
 	}
 	
 	/** Inhalt des ICPC-Felds in Datenbank ablegen */
@@ -76,6 +78,7 @@ public abstract class KonsDataFView extends SimpleTextFView
 			code_list.add(code);
 			icpc_list.add(code.getLabel());
 		}
+		area.layout();
 	}
 	
 	/** Aktuell ausgewaehlten ICPC Code loeschen (im UI und in DB). */
@@ -96,9 +99,11 @@ public abstract class KonsDataFView extends SimpleTextFView
 	protected void initialize() {
 		if (icpcfield != null) {
 			GridData gd = new GridData();
-			gd.horizontalAlignment = gd.verticalAlignment = GridData.FILL;
+			//gd.horizontalAlignment = gd.verticalAlignment = GridData.FILL;
+			gd.horizontalAlignment = GridData.FILL;
 			gd.grabExcessHorizontalSpace = true;
-			gd.heightHint = 40;
+			gd.minimumHeight = 0;
+			//gd.heightHint = 0;
 			
 			code_list = new ArrayList<IcpcCode>();
 			icpc_list = new List(area, SWT.V_SCROLL);
@@ -122,20 +127,22 @@ public abstract class KonsDataFView extends SimpleTextFView
 			});
 			icpc_list.setMenu(m);
 			
-			new PersistentObjectDropTarget(icpc_list,
-					new PersistentObjectDropTarget.IReceiver() {
-						public void dropped(PersistentObject o, DropTargetEvent e) {
-							IcpcCode code = (IcpcCode) o;
-							icpc_list.add(code.getLabel());
-							code_list.add(code);
-							storeIcpc();
-						}
-						public boolean accept(PersistentObject o) {
-							if (!(o instanceof IcpcCode) || code_list.contains(o))
-								return false;
-							return isEnabled();
-						}
-					});
+			IReceiver ir = new PersistentObjectDropTarget.IReceiver() {
+				public void dropped(PersistentObject o, DropTargetEvent e) {
+					IcpcCode code = (IcpcCode) o;
+					icpc_list.add(code.getLabel());
+					code_list.add(code);
+					area.layout();
+					storeIcpc();
+				}
+				public boolean accept(PersistentObject o) {
+					if (!(o instanceof IcpcCode) || code_list.contains(o))
+						return false;
+					return isEnabled();
+				}
+			}; 
+			new PersistentObjectDropTarget(icpc_list, ir);
+			new PersistentObjectDropTarget(textfield, ir);
 		}
 		
 		data = null;
